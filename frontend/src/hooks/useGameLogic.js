@@ -176,16 +176,28 @@ export const useGameLogic = () => {
       newY++;
     }
     
-    setPosition({ x: position.x, y: newY });
+    // 最終位置でピースを固定
+    const newBoard = board.map(row => [...row]);
     
-    // 次のフレームでピースを固定
-    setTimeout(() => {
-      const newBoard = mergePieceToBoard();
-      const clearedBoard = clearLines(newBoard);
-      setBoard(clearedBoard);
-      spawnNewPiece();
-    }, 0);
-  }, [currentPiece, position, board, gameOver, isPaused, checkCollision, mergePieceToBoard, clearLines, spawnNewPiece]);
+    for (let y = 0; y < currentPiece.shape.length; y++) {
+      for (let x = 0; x < currentPiece.shape[y].length; x++) {
+        if (currentPiece.shape[y][x]) {
+          const boardY = newY + y;
+          const boardX = position.x + x;
+          if (boardY >= 0 && boardY < BOARD_HEIGHT) {
+            newBoard[boardY][boardX] = {
+              filled: true,
+              color: currentPiece.color
+            };
+          }
+        }
+      }
+    }
+    
+    const clearedBoard = clearLines(newBoard);
+    setBoard(clearedBoard);
+    spawnNewPiece();
+  }, [currentPiece, position, board, gameOver, isPaused, checkCollision, BOARD_HEIGHT, clearLines, spawnNewPiece]);
 
   // ゲームを開始
   const startGame = useCallback(() => {
